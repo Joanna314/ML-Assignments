@@ -89,3 +89,7 @@ def synRegExperiments():
     avg_test_loss = np.mean(test_loss, axis=0)  # average over runs
 
     return avg_train_loss, avg_test_loss
+
+def preprocessCCS(dataset_folder):
+    # Implementation for preprocessing CCS dataset
+    pass

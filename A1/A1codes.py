@@ -105,4 +105,5 @@ def preprocessCCS(dataset_folder):
     X = np.array(X)
     y = np.array(y).reshape(-1, 1)
 
+
     return X, y

@@ -65,9 +65,6 @@ def synRegExperiments():
         w_L1 = minimizeL1(Xtrain, ytrain)
         w_Linf = minimizeLinf(Xtrain, ytrain)
 
-        # TODO: Evaluate the three models' performance (for each model,
-        # calculate the L2, L1 and L infinity losses on the training
-        # data). Save them to`train_loss`
         train_loss[r, 0, 0] = np.linalg.norm(Xtrain @ w_L2 - ytrain, ord=2)
         train_loss[r, 0, 1] = np.linalg.norm(Xtrain @ w_L2 - ytrain, ord=1)
         train_loss[r, 0, 2] = np.linalg.norm(Xtrain @ w_L2 - ytrain, ord=np.inf)
@@ -78,9 +75,6 @@ def synRegExperiments():
         train_loss[r, 2, 1] = np.linalg.norm(Xtrain @ w_Linf - ytrain, ord=1)
         train_loss[r, 2, 2] = np.linalg.norm(Xtrain @ w_Linf - ytrain, ord=np.inf)
         
-        # TODO: Evaluate the three models' performance (for each model,
-        # calculate the L2, L1 and L infinity losses on the test
-        # data). Save them to`test_loss`
         test_loss[r, 0, 0] = np.linalg.norm(Xtest @ w_L2 - ytest, ord=2)
         test_loss[r, 0, 1] = np.linalg.norm(Xtest @ w_L2 - ytest, ord=1)
         test_loss[r, 0, 2] = np.linalg.norm(Xtest @ w_L2 - ytest, ord=np.inf)
@@ -91,14 +85,7 @@ def synRegExperiments():
         test_loss[r, 2, 1] = np.linalg.norm(Xtest @ w_Linf - ytest, ord=1)
         test_loss[r, 2, 2] = np.linalg.norm(Xtest @ w_Linf - ytest, ord=np.inf)
 
-    # TODO: compute the average losses over runs
     avg_train_loss = np.mean(train_loss, axis=0)  # average over runs
     avg_test_loss = np.mean(test_loss, axis=0)  # average over runs
 
-    # TODO: return a 3-by-3 training loss variable and a 3-by-3 test loss variable
     return avg_train_loss, avg_test_loss
-
-if __name__ == "__main__":
-	train_loss, test_loss = synRegExperiments()
-	print("Training loss: ", train_loss)
-	print("Testing loss: ", test_loss)

@@ -1,5 +1,7 @@
 import numpy as np
 from cvxopt import matrix, solvers
+import pandas as pd
+import os
 
 def minimizeL2(X, y):  
     X_transpose = X.T
@@ -91,5 +93,16 @@ def synRegExperiments():
     return avg_train_loss, avg_test_loss
 
 def preprocessCCS(dataset_folder):
-    # Implementation for preprocessing CCS dataset
-    pass
+
+    X = []
+    y = []
+
+    content = pd.read_excel(dataset_folder + '/Concrete_Data.xls', sheet_name='Sheet1')
+    for index, row in content.iterrows():
+        X.append(row.values[:-1])
+        y.append(row.values[-1])
+
+    X = np.array(X)
+    y = np.array(y).reshape(-1, 1)
+
+    return X, y

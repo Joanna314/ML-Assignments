@@ -158,7 +158,26 @@ def runCCS(dataset_folder):
 
     return avg_train_loss, avg_test_loss
 
+def preprocessBCW(dataset_folder):
+    X = []
+    y = []
+
+    content = pd.read_csv(dataset_folder + '/wdbc.data', header=None)
+    for _, row in content.iterrows():
+        X.append(row.values[2:])
+        y.append(1 if row.values[1] == 'M' else 0)
+
+    X = np.array(X).astype(float)
+    y = np.array(y).reshape(-1, 1)
+
+    return X, y
+
 if __name__ == "__main__":
-    avg_train_loss, avg_test_loss = runCCS(os.path.join(os.path.abspath("A1/data_folder")))
-    print("Average Train Loss:\n", avg_train_loss)
-    print("Average Test Loss:\n", avg_test_loss)
+    # avg_train_loss, avg_test_loss = runCCS(os.path.join(os.path.abspath("A1/data_folder")))
+    # print("Average Train Loss:\n", avg_train_loss)
+    # print("Average Test Loss:\n", avg_test_loss)
+
+    X, y = preprocessBCW(os.path.join(os.path.abspath("A1/data_folder")))
+    print("BCW Dataset")
+    print("Features shape:", X.shape)
+    print("Labels shape:", y.shape)

@@ -231,10 +231,10 @@ def runBCW(dataset_folder):
         w = find_opt(logisticRegObj, logisticRegGrad, Xtrain, ytrain)
 
         # The model's accuracy on the training data
-        train_acc[r] = np.mean((Xtrain @ w >= 0.5) == ytrain)
+        train_acc[r] = np.mean((Xtrain @ w >= 0) == ytrain)
 
         # The model's accuracy on the test data
-        test_acc[r] = np.mean((Xtest @ w >= 0.5) == ytest)
+        test_acc[r] = np.mean((Xtest @ w >= 0) == ytest)
 
     # The average accuracies over runs
     avg_train_acc = np.mean(train_acc)

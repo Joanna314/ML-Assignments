@@ -2,6 +2,7 @@ import numpy as np
 from cvxopt import matrix, solvers
 import pandas as pd
 from scipy.optimize import minimize
+import os
 
 def minimizeL2(X, y):  
     X_transpose = X.T

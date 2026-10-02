@@ -160,6 +160,36 @@ def runCCS(dataset_folder):
 
     return avg_train_loss, avg_test_loss
 
+def linearRegL2Obj(w, X, y):
+    n, d = X.shape
+    residual = X @ w - y.ravel()
+    return (1 / (2 * n)) * np.linalg.norm(residual, ord=2) ** 2
+
+def linearRegL2Grad(w, X, y):
+    n, d = X.shape
+    return (1 / n) * X.T @ (X @ w - y.ravel())
+
+def find_opt(obj_func, grad_func, X, y):
+    d = X.shape[1]
+    w_0 = np.random.rand(d)
+
+    def func(w):
+        return obj_func(w, X, y)
+    def gd(w):
+        return grad_func(w, X, y)
+
+    return minimize(func, w_0, jac=gd)['x'][:, None]
+
+def logisticRegObj(w, X, y):
+    z = X @ w
+    y = y.ravel()
+    return np.mean(np.logaddexp(0, z) - y * z)
+
+def logisticRegGrad(w, X, y):
+    z = X @ w
+    return (1 / X.shape[0]) * X.T @ (expit(z) - y.ravel())
+
+
 def preprocessBCW(dataset_folder):
     X = []
     y = []
@@ -211,35 +241,6 @@ def runBCW(dataset_folder):
     avg_test_acc = np.mean(test_acc)
 
     return avg_train_acc, avg_test_acc
-
-def linearRegL2Obj(w, X, y):
-    n, d = X.shape
-    residual = X @ w - y.ravel()
-    return (1 / (2 * n)) * np.linalg.norm(residual, ord=2) ** 2
-
-def linearRegL2Grad(w, X, y):
-    n, d = X.shape
-    return (1 / n) * X.T @ (X @ w - y.ravel())
-
-def find_opt(obj_func, grad_func, X, y):
-    d = X.shape[1]
-    w_0 = np.random.rand(d)
-
-    def func(w):
-        return obj_func(w, X, y)
-    def gd(w):
-        return grad_func(w, X, y)
-
-    return minimize(func, w_0, jac=gd)['x'][:, None]
-
-def logisticRegObj(w, X, y):
-    z = X @ w
-    y = y.ravel()
-    return np.mean(np.logaddexp(0, z) - y * z)
-
-def logisticRegGrad(w, X, y):
-    z = X @ w
-    return (1 / X.shape[0]) * X.T @ (expit(z) - y.ravel())
 
 if __name__ == "__main__":
     # avg_train_loss, avg_test_loss = runCCS(os.path.join(os.path.abspath("A1/data_folder")))

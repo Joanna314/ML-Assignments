@@ -106,3 +106,59 @@ def preprocessCCS(dataset_folder):
     y = np.array(y).reshape(-1, 1)
 
     return X, y
+
+def runCCS(dataset_folder):
+
+    X, y = preprocessCCS(dataset_folder)
+    n, d = X.shape
+    X = np.concatenate((np.ones((n, 1)), X), axis=1) # augment
+    n_runs = 50
+
+    train_loss = np.zeros([n_runs, 3, 3]) # n_runs * n_models * n_metrics
+    test_loss = np.zeros([n_runs, 3, 3]) # n_runs * n_models * n_metrics
+
+    np.random.seed(101303246)
+
+    for r in range(n_runs):
+        indices = np.random.permutation(n)
+        split_index  = n//2
+
+        train_index = indices[:split_index]
+        test_index = indices[split_index:]
+
+        Xtrain, ytrain = X[train_index], y[train_index]
+        Xtest, ytest = X[test_index], y[test_index]
+
+        w_L2 = minimizeL2(Xtrain, ytrain)
+        w_L1 = minimizeL1(Xtrain, ytrain)
+        w_Linf = minimizeLinf(Xtrain, ytrain)
+
+        train_loss[r, 0, 0] = np.linalg.norm(Xtrain @ w_L2 - ytrain, ord=2)
+        train_loss[r, 0, 1] = np.linalg.norm(Xtrain @ w_L2 - ytrain, ord=1)
+        train_loss[r, 0, 2] = np.linalg.norm(Xtrain @ w_L2 - ytrain, ord=np.inf)
+        train_loss[r, 1, 0] = np.linalg.norm(Xtrain @ w_L1 - ytrain, ord=2)
+        train_loss[r, 1, 1] = np.linalg.norm(Xtrain @ w_L1 - ytrain, ord=1)
+        train_loss[r, 1, 2] = np.linalg.norm(Xtrain @ w_L1 - ytrain, ord=np.inf)
+        train_loss[r, 2, 0] = np.linalg.norm(Xtrain @ w_Linf - ytrain, ord=2)
+        train_loss[r, 2, 1] = np.linalg.norm(Xtrain @ w_Linf - ytrain, ord=1)
+        train_loss[r, 2, 2] = np.linalg.norm(Xtrain @ w_Linf - ytrain, ord=np.inf)
+        
+        test_loss[r, 0, 0] = np.linalg.norm(Xtest @ w_L2 - ytest, ord=2)
+        test_loss[r, 0, 1] = np.linalg.norm(Xtest @ w_L2 - ytest, ord=1)
+        test_loss[r, 0, 2] = np.linalg.norm(Xtest @ w_L2 - ytest, ord=np.inf)
+        test_loss[r, 1, 0] = np.linalg.norm(Xtest @ w_L1 - ytest, ord=2)
+        test_loss[r, 1, 1] = np.linalg.norm(Xtest @ w_L1 - ytest, ord=1)
+        test_loss[r, 1, 2] = np.linalg.norm(Xtest @ w_L1 - ytest, ord=np.inf)
+        test_loss[r, 2, 0] = np.linalg.norm(Xtest @ w_Linf - ytest, ord=2)
+        test_loss[r, 2, 1] = np.linalg.norm(Xtest @ w_Linf - ytest, ord=1)
+        test_loss[r, 2, 2] = np.linalg.norm(Xtest @ w_Linf - ytest, ord=np.inf)
+
+    avg_train_loss = np.mean(train_loss, axis=0)  # average over runs
+    avg_test_loss = np.mean(test_loss, axis=0)  # average over runs
+
+    return avg_train_loss, avg_test_loss
+
+if __name__ == "__main__":
+    avg_train_loss, avg_test_loss = runCCS(os.path.join(os.path.abspath("A1/concrete_data_folder")))
+    print("Average Train Loss:\n", avg_train_loss)
+    print("Average Test Loss:\n", avg_test_loss)

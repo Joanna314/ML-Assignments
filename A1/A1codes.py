@@ -159,6 +159,6 @@ def runCCS(dataset_folder):
     return avg_train_loss, avg_test_loss
 
 if __name__ == "__main__":
-    avg_train_loss, avg_test_loss = runCCS(os.path.join(os.path.abspath("A1/concrete_data_folder")))
+    avg_train_loss, avg_test_loss = runCCS(os.path.join(os.path.abspath("A1/data_folder")))
     print("Average Train Loss:\n", avg_train_loss)
     print("Average Test Loss:\n", avg_test_loss)

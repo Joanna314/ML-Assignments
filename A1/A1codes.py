@@ -172,12 +172,50 @@ def preprocessBCW(dataset_folder):
 
     return X, y
 
+def runBCW(dataset_folder):
+
+    X, y = preprocessBCW(dataset_folder)
+    n, d = X.shape
+    X = np.concatenate((np.ones((n, 1)), X), axis=1) # augment
+    
+    n_runs = 50
+    train_acc = np.zeros([n_runs])
+    test_acc = np.zeros([n_runs])
+
+    np.random.seed(101303431)
+
+    for r in range(n_runs):
+
+        # Random partition of the dataset (50% training, 50% testing)
+        indices = np.random.permutation(n)
+        split_index  = n//2
+
+        train_index = indices[:split_index]
+        test_index = indices[split_index:]
+
+        Xtrain, ytrain = X[train_index], y[train_index]
+        Xtest, ytest = X[test_index], y[test_index]
+
+        w = find_opt(logisticRegObj, logisticRegGrad, Xtrain, ytrain)
+
+        # The model's accuracy on the training data
+        train_acc[r] = np.mean((Xtrain @ w >= 0.5) == ytrain)
+
+        # The model's accuracy on the test data
+        test_acc[r] = np.mean((Xtest @ w >= 0.5) == ytest)
+
+    # The average accuracies over runs
+    avg_train_acc = np.mean(train_acc)
+    avg_test_acc = np.mean(test_acc)
+
+    return avg_train_acc, avg_test_acc
+
 if __name__ == "__main__":
     # avg_train_loss, avg_test_loss = runCCS(os.path.join(os.path.abspath("A1/data_folder")))
     # print("Average Train Loss:\n", avg_train_loss)
     # print("Average Test Loss:\n", avg_test_loss)
 
-    X, y = preprocessBCW(os.path.join(os.path.abspath("A1/data_folder")))
+    avg_train_acc, avg_test_acc = runBCW(os.path.join(os.path.abspath("A1/data_folder")))
     print("BCW Dataset")
-    print("Features shape:", X.shape)
-    print("Labels shape:", y.shape)
+    print("Average Training Accuracy:", avg_train_acc)
+    print("Average Test Accuracy:", avg_test_acc)

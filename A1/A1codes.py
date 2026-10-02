@@ -189,6 +189,60 @@ def logisticRegGrad(w, X, y):
     z = X @ w
     return (1 / X.shape[0]) * X.T @ (expit(z) - y.ravel())
 
+def synClsExperiments():
+
+    def genData(n_points, dim1, dim2):
+        '''
+        This function generates synthetic data
+        '''
+        c0 = np.ones([1, dim1]) # class 0 center
+        c1 = -np.ones([1, dim1]) # class 1 center
+        X0 = np.random.randn(n_points, dim1 + dim2) # class 0 input
+        X0[:, :dim1] += c0
+        X1 = np.random.randn(n_points, dim1 + dim2) # class 1 input
+        X1[:, :dim1] += c1
+        X = np.concatenate((X0, X1), axis=0)
+        X = np.concatenate((np.ones((2 * n_points, 1)), X), axis=1) # augmentation
+        y = np.concatenate([np.zeros([n_points, 1]), np.ones([n_points, 1])], axis=0)
+        return X, y
+    
+    def runClsExp(m=100, dim1=2, dim2=2):
+        '''
+        Run classification experiment with the specified arguments
+        '''
+
+        n_test = 1000
+        Xtrain, ytrain = genData(m, dim1, dim2)
+        Xtest, ytest = genData(n_test, dim1, dim2)
+
+        w_logit = find_opt(logisticRegObj, logisticRegGrad, Xtrain, ytrain)
+        ytrain_hat = (Xtrain @ w_logit >= 0).astype(int)
+        train_acc = np.mean(ytrain_hat == ytrain)
+        
+        ytest_hat = (Xtest @ w_logit >= 0).astype(int)
+        test_acc = np.mean(ytest_hat == ytest)
+        
+        return train_acc, test_acc
+    
+    n_runs = 50
+    train_acc = np.zeros([n_runs, 4, 3])
+    test_acc = np.zeros([n_runs, 4, 3])
+
+    np.random.seed(101303431)
+
+    for r in range(n_runs):
+        for i, m in enumerate((10, 50, 100, 200)):
+            train_acc[r, i, 0], test_acc[r, i, 0] = runClsExp(m=m)
+        for i, dim1 in enumerate((1, 2, 4, 8)):
+            train_acc[r, i, 1], test_acc[r, i, 1] = runClsExp(dim1=dim1)
+        for i, dim2 in enumerate((1, 2, 4, 8)):
+            train_acc[r, i, 2], test_acc[r, i, 2] = runClsExp(dim2=dim2)
+    
+    # The average accuracies over runs
+    avg_train_acc = np.mean(train_acc, axis=0)
+    avg_test_acc = np.mean(test_acc, axis=0)
+
+    return avg_train_acc, avg_test_acc
 
 def preprocessBCW(dataset_folder):
     X = []
@@ -246,6 +300,12 @@ if __name__ == "__main__":
     # avg_train_loss, avg_test_loss = runCCS(os.path.join(os.path.abspath("A1/data_folder")))
     # print("Average Train Loss:\n", avg_train_loss)
     # print("Average Test Loss:\n", avg_test_loss)
+
+    syn_train_acc, syn_test_acc = synClsExperiments()
+    print("Synthetic Dataset")
+    print("Average Training Accuracy:", syn_train_acc)
+    print("Average Test Accuracy:", syn_test_acc)
+
 
     avg_train_acc, avg_test_acc = runBCW(os.path.join(os.path.abspath("A1/data_folder")))
     print("BCW Dataset")

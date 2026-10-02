@@ -186,11 +186,11 @@ def logisticRegObj(w, X, y):
     obj_val = 1/n * (y.T * np.logaddexp(0, -X @ w) + (1 - y).T * np.logaddexp(X @ w, 0))
     return obj_val
 
-#def logisticRegGrad(w, X, y):
-#    n, d = X.shape
-#    z = X @ w
-#    gradient = 1/n * X.T @ (sigmoid(z) - y)
-#    return gradient
+def logisticRegGrad(w, X, y):
+    n, d = X.shape
+    z = X @ w
+    gradient = 1/n * X.T @ ((1/(1+np.exp(-(X @ w)))) - y)
+    return gradient
 
 if __name__ == "__main__":
     avg_train_loss, avg_test_loss = runCCS(os.path.join(os.path.abspath("A1/concrete_data_folder")))

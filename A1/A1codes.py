@@ -165,7 +165,6 @@ def linearRegL2Obj(w, X, y):
     obj_val = (1 / (2 * n)) *np.linalg.norm(X @ w - y, ord=2) ** 2
     return obj_val
 
-
 def linearRegL2Grad(w, X, y):
     n, d = X.shape
     gradient = (1 / n) * X.T @ (X @ w - y)
@@ -181,3 +180,14 @@ def find_opt(obj_func, grad_func, X, y):
         return grad_func(w, X, y)
 
     return minimize(func, w_0, jac=gd)['x'][:, None]
+
+def logisticRegObj(w, X, y):
+    n, d = X.shape
+    obj_val = 1/n * (y.T * np.logaddexp(0, -X @ w) + (1 - y).T * np.logaddexp(X @ w, 0))
+    return obj_val
+
+#def logisticRegGrad(w, X, y):
+#    n, d = X.shape
+#    z = X @ w
+#    gradient = 1/n * X.T @ (sigmoid(z) - y)
+#    return gradient

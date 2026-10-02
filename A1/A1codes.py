@@ -1,7 +1,7 @@
 import numpy as np
 from cvxopt import matrix, solvers
 import pandas as pd
-import os
+from scipy.optimize import minimize
 
 def minimizeL2(X, y):  
     X_transpose = X.T
@@ -158,7 +158,26 @@ def runCCS(dataset_folder):
 
     return avg_train_loss, avg_test_loss
 
-if __name__ == "__main__":
-    avg_train_loss, avg_test_loss = runCCS(os.path.join(os.path.abspath("A1/concrete_data_folder")))
-    print("Average Train Loss:\n", avg_train_loss)
-    print("Average Test Loss:\n", avg_test_loss)
+
+def linearRegL2Obj(w, X, y):
+
+    n, d = X.shape
+    obj_val = (1 / (2 * n)) *np.linalg.norm(X @ w - y, ord=2) ** 2
+    return obj_val
+
+
+def linearRegL2Grad(w, X, y):
+    n, d = X.shape
+    gradient = (1 / n) * X.T @ (X @ w - y)
+    return gradient 
+
+def find_opt(obj_func, grad_func, X, y):
+    d = X.shape[1]
+    w_0 = np.random.rand(d)
+
+    def func(w):
+        return obj_func(w, X, y)
+    def gd(w):
+        return grad_func(w, X, y)
+
+    return minimize(func, w_0, jac=gd)['x'][:, None]

@@ -194,11 +194,13 @@ def find_opt(obj_func, grad_func, X, y):
 
 def logisticRegObj(w, X, y):
     n, d = X.shape
-    obj_val = 1/n * (y.T * np.logaddexp(0, -X @ w) + (1 - y).T * np.logaddexp(X @ w, 0))
+    y = y.ravel()
+    obj_val = 1/n * np.sum((y.T * np.logaddexp(0, -X @ w) + (1 - y).T * np.logaddexp(X @ w, 0)))
     return obj_val
 
 def logisticRegGrad(w, X, y):
     n, d = X.shape
+    y = y.ravel()
     z = X @ w
     gradient = 1/n * X.T @ ((1/(1+np.exp(-(X @ w)))) - y)
-    return gradient
+    return gradient.ravel()

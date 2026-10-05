@@ -5,11 +5,15 @@ from scipy.optimize import minimize
 import os
 
 def minimizeL2(X, y):  
+    ''' This function computes the L2 regression solution using the closed form solution
+    ''' 
     X_transpose = X.T
     w = np.linalg.inv(X_transpose @ X) @ X_transpose @ y
     return w
 
 def minimizeL1(X, y):
+    ''' This function computes the L1 regression solution using linear programming
+    '''
     n, d = X.shape
     c = np.concatenate([np.zeros(d), np.ones(n)])
     G = np.concatenate([np.concatenate([np.zeros_like(X),-np.eye(n)], axis=1),
@@ -23,6 +27,8 @@ def minimizeL1(X, y):
     return np.array(w)
 
 def minimizeLinf(X, y):
+    ''' This function computes the Linf regression solution using linear programming
+    '''
     n, d = X.shape
     c = np.concatenate([np.zeros(d), [1.0]])
     G = np.concatenate([np.concatenate([np.zeros((1,d)),-np.ones((1,1))], axis=1),
@@ -36,6 +42,8 @@ def minimizeLinf(X, y):
     return np.array(w)
 
 def synRegExperiments():
+    ''' This function runs synthetic regression experiments and returns the average train and test loss
+    '''
 
     def genData(n_points, is_training=False):
         '''
@@ -68,24 +76,24 @@ def synRegExperiments():
         w_L1 = minimizeL1(Xtrain, ytrain)
         w_Linf = minimizeLinf(Xtrain, ytrain)
 
-        train_loss[r, 0, 0] = np.linalg.norm(Xtrain @ w_L2 - ytrain, ord=2)
-        train_loss[r, 0, 1] = np.linalg.norm(Xtrain @ w_L2 - ytrain, ord=1)
+        train_loss[r, 0, 0] = (np.linalg.norm(Xtrain @ w_L2 - ytrain, ord=2) ** 2) / (2 * n_train)
+        train_loss[r, 0, 1] = np.linalg.norm(Xtrain @ w_L2 - ytrain, ord=1)/n_train
         train_loss[r, 0, 2] = np.linalg.norm(Xtrain @ w_L2 - ytrain, ord=np.inf)
-        train_loss[r, 1, 0] = np.linalg.norm(Xtrain @ w_L1 - ytrain, ord=2)
-        train_loss[r, 1, 1] = np.linalg.norm(Xtrain @ w_L1 - ytrain, ord=1)
+        train_loss[r, 1, 0] = (np.linalg.norm(Xtrain @ w_L1 - ytrain, ord=2) ** 2) / (2 * n_train)
+        train_loss[r, 1, 1] = np.linalg.norm(Xtrain @ w_L1 - ytrain, ord=1)/n_train
         train_loss[r, 1, 2] = np.linalg.norm(Xtrain @ w_L1 - ytrain, ord=np.inf)
-        train_loss[r, 2, 0] = np.linalg.norm(Xtrain @ w_Linf - ytrain, ord=2)
-        train_loss[r, 2, 1] = np.linalg.norm(Xtrain @ w_Linf - ytrain, ord=1)
+        train_loss[r, 2, 0] = (np.linalg.norm(Xtrain @ w_Linf - ytrain, ord=2) ** 2) / (2 * n_train)
+        train_loss[r, 2, 1] = np.linalg.norm(Xtrain @ w_Linf - ytrain, ord=1)/n_train
         train_loss[r, 2, 2] = np.linalg.norm(Xtrain @ w_Linf - ytrain, ord=np.inf)
-        
-        test_loss[r, 0, 0] = np.linalg.norm(Xtest @ w_L2 - ytest, ord=2)
-        test_loss[r, 0, 1] = np.linalg.norm(Xtest @ w_L2 - ytest, ord=1)
+
+        test_loss[r, 0, 0] = (np.linalg.norm(Xtest @ w_L2 - ytest, ord=2) ** 2) / (2 * n_test)
+        test_loss[r, 0, 1] = np.linalg.norm(Xtest @ w_L2 - ytest, ord=1)/n_test
         test_loss[r, 0, 2] = np.linalg.norm(Xtest @ w_L2 - ytest, ord=np.inf)
-        test_loss[r, 1, 0] = np.linalg.norm(Xtest @ w_L1 - ytest, ord=2)
-        test_loss[r, 1, 1] = np.linalg.norm(Xtest @ w_L1 - ytest, ord=1)
+        test_loss[r, 1, 0] = (np.linalg.norm(Xtest @ w_L1 - ytest, ord=2) ** 2) / (2 * n_test)
+        test_loss[r, 1, 1] = np.linalg.norm(Xtest @ w_L1 - ytest, ord=1)/n_test
         test_loss[r, 1, 2] = np.linalg.norm(Xtest @ w_L1 - ytest, ord=np.inf)
-        test_loss[r, 2, 0] = np.linalg.norm(Xtest @ w_Linf - ytest, ord=2)
-        test_loss[r, 2, 1] = np.linalg.norm(Xtest @ w_Linf - ytest, ord=1)
+        test_loss[r, 2, 0] = (np.linalg.norm(Xtest @ w_Linf - ytest, ord=2) ** 2) / (2 * n_test)
+        test_loss[r, 2, 1] = np.linalg.norm(Xtest @ w_Linf - ytest, ord=1)/n_test
         test_loss[r, 2, 2] = np.linalg.norm(Xtest @ w_Linf - ytest, ord=np.inf)
 
     avg_train_loss = np.mean(train_loss, axis=0)  # average over runs
@@ -130,28 +138,31 @@ def runCCS(dataset_folder):
         Xtrain, ytrain = X[train_index], y[train_index]
         Xtest, ytest = X[test_index], y[test_index]
 
+        n_train = len(Xtrain)
+        n_test = len(Xtest)
+
         w_L2 = minimizeL2(Xtrain, ytrain)
         w_L1 = minimizeL1(Xtrain, ytrain)
         w_Linf = minimizeLinf(Xtrain, ytrain)
 
-        train_loss[r, 0, 0] = np.linalg.norm(Xtrain @ w_L2 - ytrain, ord=2)
-        train_loss[r, 0, 1] = np.linalg.norm(Xtrain @ w_L2 - ytrain, ord=1)
+        train_loss[r, 0, 0] = (np.linalg.norm(Xtrain @ w_L2 - ytrain, ord=2) ** 2) / (2 * n_train)
+        train_loss[r, 0, 1] = np.linalg.norm(Xtrain @ w_L2 - ytrain, ord=1)/n_train
         train_loss[r, 0, 2] = np.linalg.norm(Xtrain @ w_L2 - ytrain, ord=np.inf)
-        train_loss[r, 1, 0] = np.linalg.norm(Xtrain @ w_L1 - ytrain, ord=2)
-        train_loss[r, 1, 1] = np.linalg.norm(Xtrain @ w_L1 - ytrain, ord=1)
+        train_loss[r, 1, 0] = (np.linalg.norm(Xtrain @ w_L1 - ytrain, ord=2) ** 2) / (2 * n_train)
+        train_loss[r, 1, 1] = np.linalg.norm(Xtrain @ w_L1 - ytrain, ord=1)/n_train
         train_loss[r, 1, 2] = np.linalg.norm(Xtrain @ w_L1 - ytrain, ord=np.inf)
-        train_loss[r, 2, 0] = np.linalg.norm(Xtrain @ w_Linf - ytrain, ord=2)
-        train_loss[r, 2, 1] = np.linalg.norm(Xtrain @ w_Linf - ytrain, ord=1)
+        train_loss[r, 2, 0] = (np.linalg.norm(Xtrain @ w_Linf - ytrain, ord=2) ** 2) / (2 * n_train)
+        train_loss[r, 2, 1] = np.linalg.norm(Xtrain @ w_Linf - ytrain, ord=1)/n_train
         train_loss[r, 2, 2] = np.linalg.norm(Xtrain @ w_Linf - ytrain, ord=np.inf)
-        
-        test_loss[r, 0, 0] = np.linalg.norm(Xtest @ w_L2 - ytest, ord=2)
-        test_loss[r, 0, 1] = np.linalg.norm(Xtest @ w_L2 - ytest, ord=1)
+
+        test_loss[r, 0, 0] = (np.linalg.norm(Xtest @ w_L2 - ytest, ord=2) ** 2) / (2 * n_test)
+        test_loss[r, 0, 1] = np.linalg.norm(Xtest @ w_L2 - ytest, ord=1)/n_test
         test_loss[r, 0, 2] = np.linalg.norm(Xtest @ w_L2 - ytest, ord=np.inf)
-        test_loss[r, 1, 0] = np.linalg.norm(Xtest @ w_L1 - ytest, ord=2)
-        test_loss[r, 1, 1] = np.linalg.norm(Xtest @ w_L1 - ytest, ord=1)
+        test_loss[r, 1, 0] = (np.linalg.norm(Xtest @ w_L1 - ytest, ord=2) ** 2) / (2 * n_test)
+        test_loss[r, 1, 1] = np.linalg.norm(Xtest @ w_L1 - ytest, ord=1)/n_test
         test_loss[r, 1, 2] = np.linalg.norm(Xtest @ w_L1 - ytest, ord=np.inf)
-        test_loss[r, 2, 0] = np.linalg.norm(Xtest @ w_Linf - ytest, ord=2)
-        test_loss[r, 2, 1] = np.linalg.norm(Xtest @ w_Linf - ytest, ord=1)
+        test_loss[r, 2, 0] = (np.linalg.norm(Xtest @ w_Linf - ytest, ord=2) ** 2) / (2 * n_test)
+        test_loss[r, 2, 1] = np.linalg.norm(Xtest @ w_Linf - ytest, ord=1)/n_test
         test_loss[r, 2, 2] = np.linalg.norm(Xtest @ w_Linf - ytest, ord=np.inf)
 
     avg_train_loss = np.mean(train_loss, axis=0)  # average over runs
@@ -191,9 +202,3 @@ def logisticRegGrad(w, X, y):
     z = X @ w
     gradient = 1/n * X.T @ ((1/(1+np.exp(-(X @ w)))) - y)
     return gradient
-
-if __name__ == "__main__":
-    avg_train_loss, avg_test_loss = runCCS(os.path.join(os.path.abspath("A1/concrete_data_folder")))
-    print("Average Train Loss:\n", avg_train_loss)
-    print("Average Test Loss:\n", avg_test_loss)
-

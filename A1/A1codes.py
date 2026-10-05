@@ -102,6 +102,8 @@ def synRegExperiments():
     return avg_train_loss, avg_test_loss
 
 def preprocessCCS(dataset_folder):
+    ''' This function preprocesses the Concrete Compressive Strength dataset
+    '''
 
     X = []
     y = []
@@ -117,6 +119,8 @@ def preprocessCCS(dataset_folder):
     return X, y
 
 def runCCS(dataset_folder):
+    ''' This function runs the Concrete Compressive Strength dataset experiments and returns the average train and test loss
+    '''
 
     X, y = preprocessCCS(dataset_folder)
     n, d = X.shape
@@ -171,34 +175,47 @@ def runCCS(dataset_folder):
     return avg_train_loss, avg_test_loss
 
 def linearRegL2Obj(w, X, y):
-
+    ''' This function computes the L2 regression objective value
+    '''
     n, d = X.shape
     obj_val = (1 / (2 * n)) *np.linalg.norm(X @ w - y, ord=2) ** 2
     return obj_val
 
 def linearRegL2Grad(w, X, y):
+    ''' This function computes the L2 regression gradient
+    ''' 
     n, d = X.shape
     gradient = (1 / n) * X.T @ (X @ w - y)
     return gradient 
 
 def find_opt(obj_func, grad_func, X, y):
+    ''' This function finds the optimal solution for a given objective and gradient function
+    '''
     d = X.shape[1]
     w_0 = np.random.rand(d)
 
     def func(w):
+        ''' This function computes the objective value for a given w
+        '''
         return obj_func(w, X, y)
     def gd(w):
+        ''' This function computes the gradient for a given w
+        '''
         return grad_func(w, X, y)
 
     return minimize(func, w_0, jac=gd)['x'][:, None]
 
 def logisticRegObj(w, X, y):
+    ''' This function computes the logistic regression objective value
+    '''
     n, d = X.shape
     y = y.ravel()
     obj_val = 1/n * np.sum((y.T * np.logaddexp(0, -X @ w) + (1 - y).T * np.logaddexp(X @ w, 0)))
     return obj_val
 
 def logisticRegGrad(w, X, y):
+    ''' This function computes the logistic regression gradient
+    '''
     n, d = X.shape
     y = y.ravel()
     z = X @ w

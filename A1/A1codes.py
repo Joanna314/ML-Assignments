@@ -189,15 +189,16 @@ def linearRegL2Obj(w, X, y):
     This function computes the L2 regression objective value
     '''
     n, d = X.shape
-    residual = X @ w - y.ravel()
-    return (1 / (2 * n)) * np.linalg.norm(residual, ord=2) ** 2
+    obj_val = (1 / (2 * n)) *np.linalg.norm(X @ w - y, ord=2) ** 2
+    return obj_val
 
 def linearRegL2Grad(w, X, y):
     ''' 
     This function computes the L2 regression gradient
     '''
     n, d = X.shape
-    return (1 / n) * X.T @ (X @ w - y.ravel())
+    gradient = (1 / n) * X.T @ (X @ w - y)
+    return gradient 
 
 def find_opt(obj_func, grad_func, X, y):
     ''' 
@@ -210,12 +211,12 @@ def find_opt(obj_func, grad_func, X, y):
         ''' 
         This function computes the objective value for a given w
         '''
-        return obj_func(w, X, y)
+        return obj_func(w[:, None], X, y)
     def gd(w):
         ''' 
         This function computes the gradient for a given w
         '''
-        return grad_func(w, X, y)
+        return np.asarray(grad_func(w[:, None], X, y)).ravel()
 
     return minimize(func, w_0, jac=gd)['x'][:, None]
 
@@ -225,7 +226,8 @@ def logisticRegObj(w, X, y):
     '''
     n, d = X.shape
     y = y.ravel()
-    obj_val = 1/n * np.sum((y.T * np.logaddexp(0, -X @ w) + (1 - y).T * np.logaddexp(X @ w, 0)))
+    z = (X @ w).ravel()
+    obj_val = 1/n * np.sum((y * np.logaddexp(0, -z) + (1 - y) * np.logaddexp(z, 0)))
     return obj_val
 
 def logisticRegGrad(w, X, y):
@@ -234,9 +236,9 @@ def logisticRegGrad(w, X, y):
     '''
     n, d = X.shape
     y = y.ravel()
-    z = X @ w
+    z = (X @ w).ravel()
     gradient = 1/n * X.T @ (expit(z) - y)
-    return gradient.ravel()
+    return gradient[:, None]
 
 def synClsExperiments():
     ''' 
@@ -353,19 +355,3 @@ def runBCW(dataset_folder):
     avg_test_acc = np.mean(test_acc)
 
     return avg_train_acc, avg_test_acc
-
-if __name__ == "__main__":
-    # avg_train_loss, avg_test_loss = runCCS(os.path.join(os.path.abspath("A1/data_folder")))
-    # print("Average Train Loss:\n", avg_train_loss)
-    # print("Average Test Loss:\n", avg_test_loss)
-
-    syn_train_acc, syn_test_acc = synClsExperiments()
-    print("Synthetic Dataset")
-    print("Average Training Accuracy:", syn_train_acc)
-    print("Average Test Accuracy:", syn_test_acc)
-
-
-    avg_train_acc, avg_test_acc = runBCW(os.path.join(os.path.abspath("A1/data_folder")))
-    print("BCW Dataset")
-    print("Average Training Accuracy:", avg_train_acc)
-    print("Average Test Accuracy:", avg_test_acc)

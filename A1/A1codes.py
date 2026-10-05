@@ -6,14 +6,16 @@ from scipy.special import expit
 import os
 
 def minimizeL2(X, y):  
-    ''' This function computes the L2 regression solution using the closed form solution
+    ''' 
+    This function computes the L2 regression solution using the closed form solution
     '''
     X_transpose = X.T
     w = np.linalg.inv(X_transpose @ X) @ X_transpose @ y
     return w
 
 def minimizeL1(X, y):
-    ''' This function computes the L1 regression solution using linear programming
+    ''' 
+    This function computes the L1 regression solution using linear programming
     '''
     n, d = X.shape
     c = np.concatenate([np.zeros(d), np.ones(n)])
@@ -28,7 +30,8 @@ def minimizeL1(X, y):
     return np.array(w)
 
 def minimizeLinf(X, y):
-    ''' This function computes the Linf regression solution using linear programming
+    ''' 
+    This function computes the Linf regression solution using linear programming
     '''
     n, d = X.shape
     c = np.concatenate([np.zeros(d), [1.0]])
@@ -43,7 +46,8 @@ def minimizeLinf(X, y):
     return np.array(w)
 
 def synRegExperiments():
-    ''' This function runs synthetic regression experiments and returns the average train and test loss
+    ''' 
+    This function runs synthetic regression experiments and returns the average train and test loss
     '''
 
     def genData(n_points, is_training=False):
@@ -77,6 +81,7 @@ def synRegExperiments():
         w_L1 = minimizeL1(Xtrain, ytrain)
         w_Linf = minimizeLinf(Xtrain, ytrain)
 
+        # Compute the training and test loss for each model and each metric
         train_loss[r, 0, 0] = (np.linalg.norm(Xtrain @ w_L2 - ytrain, ord=2) ** 2) / (2 * n_train)
         train_loss[r, 0, 1] = np.linalg.norm(Xtrain @ w_L2 - ytrain, ord=1)/n_train
         train_loss[r, 0, 2] = np.linalg.norm(Xtrain @ w_L2 - ytrain, ord=np.inf)
@@ -103,7 +108,8 @@ def synRegExperiments():
     return avg_train_loss, avg_test_loss
 
 def preprocessCCS(dataset_folder):
-    ''' This function preprocesses the Concrete Compressive Strength dataset
+    ''' 
+    This function preprocesses the Concrete Compressive Strength dataset
     '''
 
     X = []
@@ -111,8 +117,8 @@ def preprocessCCS(dataset_folder):
 
     content = pd.read_excel(dataset_folder + '/Concrete_Data.xls', sheet_name='Sheet1')
     for index, row in content.iterrows():
-        X.append(row.values[:-1])
-        y.append(row.values[-1])
+        X.append(row.values[:-1]) # append all columns except the last one as features
+        y.append(row.values[-1]) # append the last column as the target variable
 
     X = np.array(X)
     y = np.array(y).reshape(-1, 1)
@@ -120,7 +126,9 @@ def preprocessCCS(dataset_folder):
     return X, y
 
 def runCCS(dataset_folder):
-    ''' This function runs the Concrete Compressive Strength dataset experiments and returns the average train and test loss
+    ''' 
+    This function runs the Concrete Compressive Strength dataset experiments
+    and returns the average train and test loss
     '''
 
     X, y = preprocessCCS(dataset_folder)
@@ -150,6 +158,7 @@ def runCCS(dataset_folder):
         w_L1 = minimizeL1(Xtrain, ytrain)
         w_Linf = minimizeLinf(Xtrain, ytrain)
 
+        # Compute the training and test loss for each model and each metric
         train_loss[r, 0, 0] = (np.linalg.norm(Xtrain @ w_L2 - ytrain, ord=2) ** 2) / (2 * n_train)
         train_loss[r, 0, 1] = np.linalg.norm(Xtrain @ w_L2 - ytrain, ord=1)/n_train
         train_loss[r, 0, 2] = np.linalg.norm(Xtrain @ w_L2 - ytrain, ord=np.inf)
@@ -176,45 +185,63 @@ def runCCS(dataset_folder):
     return avg_train_loss, avg_test_loss
 
 def linearRegL2Obj(w, X, y):
-    ''' This function computes the L2 regression objective value
+    ''' 
+    This function computes the L2 regression objective value
     '''
     n, d = X.shape
     residual = X @ w - y.ravel()
     return (1 / (2 * n)) * np.linalg.norm(residual, ord=2) ** 2
 
 def linearRegL2Grad(w, X, y):
-    ''' This function computes the L2 regression gradient
+    ''' 
+    This function computes the L2 regression gradient
     '''
     n, d = X.shape
     return (1 / n) * X.T @ (X @ w - y.ravel())
 
 def find_opt(obj_func, grad_func, X, y):
-    ''' This function finds the optimal solution for a given objective and gradient function
+    ''' 
+    This function finds the optimal solution for a given objective and gradient function
     '''
     d = X.shape[1]
     w_0 = np.random.rand(d)
 
     def func(w):
-        ''' This function computes the objective value for a given w
+        ''' 
+        This function computes the objective value for a given w
         '''
         return obj_func(w, X, y)
     def gd(w):
-        ''' This function computes the gradient for a given w
+        ''' 
+        This function computes the gradient for a given w
         '''
         return grad_func(w, X, y)
 
     return minimize(func, w_0, jac=gd)['x'][:, None]
 
 def logisticRegObj(w, X, y):
-    z = X @ w
+    ''' 
+    This function computes the logistic regression objective value
+    '''
+    n, d = X.shape
     y = y.ravel()
-    return np.mean(np.logaddexp(0, z) - y * z)
+    obj_val = 1/n * np.sum((y.T * np.logaddexp(0, -X @ w) + (1 - y).T * np.logaddexp(X @ w, 0)))
+    return obj_val
 
 def logisticRegGrad(w, X, y):
+    ''' 
+    This function computes the logistic regression gradient
+    '''
+    n, d = X.shape
+    y = y.ravel()
     z = X @ w
-    return (1 / X.shape[0]) * X.T @ (expit(z) - y.ravel())
+    gradient = 1/n * X.T @ (expit(z) - y)
+    return gradient.ravel()
 
 def synClsExperiments():
+    ''' 
+    This function runs synthetic classification experiments and returns the average train and test accuracy
+    '''
 
     def genData(n_points, dim1, dim2):
         '''
@@ -241,11 +268,11 @@ def synClsExperiments():
         Xtest, ytest = genData(n_test, dim1, dim2)
 
         w_logit = find_opt(logisticRegObj, logisticRegGrad, Xtrain, ytrain)
-        ytrain_hat = (Xtrain @ w_logit >= 0).astype(int)
-        train_acc = np.mean(ytrain_hat == ytrain)
+        ytrain_hat = (Xtrain @ w_logit >= 0).astype(int) # Compute predicted labels for training points
+        train_acc = np.mean(ytrain_hat == ytrain) # Compute training set accuracy
         
-        ytest_hat = (Xtest @ w_logit >= 0).astype(int)
-        test_acc = np.mean(ytest_hat == ytest)
+        ytest_hat = (Xtest @ w_logit >= 0).astype(int) # Compute predicted labels for test points
+        test_acc = np.mean(ytest_hat == ytest) # Compute test set accuracy
         
         return train_acc, test_acc
     
@@ -270,13 +297,16 @@ def synClsExperiments():
     return avg_train_acc, avg_test_acc
 
 def preprocessBCW(dataset_folder):
+    '''
+    This function preprocesses the Breast Cancer Wisconsin dataset
+    '''
     X = []
     y = []
 
     content = pd.read_csv(dataset_folder + '/wdbc.data', header=None)
     for _, row in content.iterrows():
-        X.append(row.values[2:])
-        y.append(1 if row.values[1] == 'M' else 0)
+        X.append(row.values[2:]) # append all columns except the first two as features
+        y.append(1 if row.values[1] == 'M' else 0) # append 1 for malignant and 0 for benign as the target variable
 
     X = np.array(X).astype(float)
     y = np.array(y).reshape(-1, 1)
@@ -284,7 +314,10 @@ def preprocessBCW(dataset_folder):
     return X, y
 
 def runBCW(dataset_folder):
-
+    '''
+    This function runs the Breast Cancer Wisconsin dataset experiments
+    and returns the average train and test accuracy
+    '''
     X, y = preprocessBCW(dataset_folder)
     n, d = X.shape
     X = np.concatenate((np.ones((n, 1)), X), axis=1) # augment

@@ -9,6 +9,7 @@ def minSqHinge(X, y, lamb):
         Args:
             X: An n-by-d matrix of input vectors
             y: An n-by-1 vector of output labels
+            lamb: A scalar regularization parameter
     
         Returns:
             A tuple of optimal model parameters (w, w0) where w is d-by-1 and
@@ -44,6 +45,8 @@ def minHinge(X, y, lamb, stabilizer=1e-5):
         Args:
             X: An n-by-d matrix of input vectors
             y: An n-by-1 vector of output labels
+            lamb: A scalar regularization parameter
+            stabilizer: A small value to stabilize the optimization
     
         Returns:
             A tuple of optimal model parameters (w, w0) where w is d-by-1 and
@@ -130,3 +133,54 @@ def synExperimentsRegularize():
     avg_test_acc = np.concatenate([avg_test_acc_sq_hinge, avg_test_acc_hinge], axis=1)
 
     return avg_train_acc, avg_test_acc
+
+def  dualHinge(X, y, lamb, kernel_func, stabilizer=1e-5):
+    """
+        This function computes the best model with hinge loss and L2 regularization using the dual formulation.
+    
+        Args:
+            X: An n-by-d matrix of input vectors
+            y: An n-by-1 vector of output labels
+            kernel_func: A function that computes the kernel between two sets of input vectors
+            stabilizer: A small value to stabilize the optimization
+    
+        Returns:
+            A tuple of optimal model parameters (a, b) where a is n-by-1 and
+            b is a scalar
+    """
+    n, d = X.shape
+
+    K = kernel_func(X, X)
+
+    y = y.reshape(-1, 1)
+
+    P = 1/lamb * (np.diag(y.flatten())) @ K @ (np.diag(y.flatten()))
+    P = P + stabilizer * np.eye(n)
+    q = -np.ones((n, 1))
+
+    G = np.concatenate([-np.eye(n), np.eye(n)], axis=0)
+    h = np.concatenate([np.zeros(n), np.ones(n)], axis=0)
+
+    A = y.reshape(1, -1)
+    b = np.zeros((1, 1))
+
+    P = matrix(P)
+    q = matrix(q)
+    G = matrix(G)
+    h = matrix(h)
+    A = matrix(A)
+    b = matrix(b)
+
+    sol = cvxopt.solvers.qp(P, q, G, h, A, b)
+
+    a = np.array(sol['x'])
+
+    i = np.where((a > 1e-4) & (a < 1.0 - 1e-4))[0]
+    if len(i) > 0:
+        i_val = i[np.argmin(np.abs(a[i] - 0.5))]
+    else:
+        i_val = 0
+
+    b = y[i_val] - (1/lamb * K[i_val, :] @ np.diag(y.flatten()) @ a)
+
+    return a, b

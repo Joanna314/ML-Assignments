@@ -203,3 +203,34 @@ def dualClassify(Xtest, a, b, X, y, lamb, kernel_func):
     yhat = np.where(scores >= 0, 1.0, -1.0)
 
     return yhat
+
+def cvMnist(dataset_folder, lamb_list, kernel_list, k=5):
+
+    train_data = pd.read_csv(f"{dataset_folder}/A2train.csv", header=None).to_numpy()
+
+    X = train_data[:, 1:] / 255.
+    y = train_data[:, 0][:, None]
+
+    y[y == 4] =-1
+    y[y == 9] = 1
+
+    cv_acc = np.zeros([k, len(lamb_list), len(kernel_list)])
+
+    np.random.seed(176)
+
+    # TODO: shuffle the indices and divide them using np.array_split
+    for i, lamb in enumerate(lamb_list):
+        for j, kernel_func in enumerate(kernel_list):
+            for l in range(k):
+                Xtrain = # TODO: obtain the training input
+                ytrain = # TODO: obtain the corresponding training label
+                Xval = # TODO: obtain the validation input
+                yval = # TODO: obtain the corresponding validation label
+                a, b = dualHinge(Xtrain, ytrain, lamb, kernel_func)
+                yhat = dualClassify(Xval, a, b, Xtrain, ytrain, lamb, kernel_func)
+                cv_acc[l, i, j] = # TODO: calculate validation accuracy
+
+    # TODO: compute the average accuracies over k folds
+    cv_acc = np.mean(cv_acc, axis=0)
+    # TODO: identify the best lamb and kernel function
+    # TODO: return a "len(lamb_list)-by-len(kernel_list)" accuracy variable,the best lamb and the best kernel

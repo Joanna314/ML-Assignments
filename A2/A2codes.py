@@ -171,7 +171,7 @@ def  dualHinge(X, y, lamb, kernel_func, stabilizer=1e-5):
     A = matrix(A)
     b = matrix(b)
 
-    sol = cvxopt.solvers.qp(P, q, G, h, A, b)
+    sol = solvers.qp(P, q, G, h, A, b)
 
     a = np.array(sol['x'])
 
@@ -184,3 +184,22 @@ def  dualHinge(X, y, lamb, kernel_func, stabilizer=1e-5):
     b = y[i_val] - (1/lamb * K[i_val, :] @ np.diag(y.flatten()) @ a)
 
     return a, b
+
+def dualClassify(Xtest, a, b, X, y, lamb, kernel_func):
+    """
+        This function classifies the test data using the learned model parameters from the dual formulation.
+    
+        Args:
+            Xtest: An n-by-d matrix of input vectors
+            a: An n-by-1 vector of dual variables
+            b: A scalar bias term
+            X: An n-by-d matrix of training input vectors
+            y: An n-by-1 vector of training output labels
+            lamb: A scalar regularization parameter
+            kernel_func: A function that computes the kernel between two sets of input vectors
+    """
+
+    scores = 1/lamb * kernel_func(Xtest, X) @ (np.diag(y.flatten()) @ a) + b
+    yhat = np.where(scores >= 0, 1.0, -1.0)
+
+    return yhat

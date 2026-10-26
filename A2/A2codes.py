@@ -106,17 +106,6 @@ def synExperimentsRegularize():
 def adjSqHinge(X, y, lamb, kernel_func):
     '''
     This function computes the best model for the adjoint squared hinge loss optimization problem
-
-    Args:
-        X: input data (n x n)
-        y: labels (n x 1)
-        lamb: regularization parameter
-        kernel_func: kernel function to compute the kernel matrix
-
-    Returns:
-        (a, a0): tuple of optimal model parameters
-            a: dual coefficients, shape (n x 1)
-            a0: scalar scalar
     '''
     K = kernel_func(X, X)   # compute the kernel matrix
     y = y.reshape(-1)    # reshape y to be a 1D array
@@ -186,16 +175,6 @@ def adjHinge(X, y, lamb, kernel_func, stabilizer=1e-5):
 def adjClassify(Xtest, a, a0, X, kernel_func):
     '''
     This function classifies the test data using the adjoint model parameters
-
-    Args:
-        Xtest: test data (m x n)
-        a: parameters (n x 1)
-        a0: scalar intercept
-        X: training data (n x n)
-        kernel_func: kernel function to compute the kernel matrix
-
-    Returns:
-        yhat: predicted labels for the test data (m x 1)
     '''
     K_test = kernel_func(Xtest, X)  # compute the kernel matrix between test and training data
     yhat = np.sign(K_test @ a + a0)  # compute the predicted labels
@@ -203,7 +182,7 @@ def adjClassify(Xtest, a, a0, X, kernel_func):
 
 
 def synExperimentsKernel():
-    n_runs = 100
+    n_runs = 10
     n_train = 100
     n_test = 1000
     lamb = 0.001
@@ -267,12 +246,10 @@ def dualHinge(X, y, lamb, kernel_func, stabilizer=1e-5):
     y = y.reshape(-1)
     n = len(y)
 
-    # cvxopt minimizes 1/2 * alpha.T @ P @ alpha + q.T @ alpha.
     P = np.outer(y, y) * K / lamb
     P = P + stabilizer * np.eye(n)
     q = -np.ones(n)
 
-    # 0 <= alpha <= 1, with y.T @ alpha = 0.
     G = np.vstack([-np.eye(n), np.eye(n)])
     h = np.concatenate([np.zeros(n), np.ones(n)])
     A = y.reshape(1, -1)
@@ -283,7 +260,6 @@ def dualHinge(X, y, lamb, kernel_func, stabilizer=1e-5):
     )
     alpha = np.asarray(res['x']).reshape(-1)
 
-    # The coefficient closest to 0.5 is the most reliable for recovering b.
     support_idx = np.argmin(np.abs(alpha - 0.5))
     b = y[support_idx] - K[support_idx, :] @ (y * alpha) / lamb
     return alpha.reshape(-1, 1), float(b)

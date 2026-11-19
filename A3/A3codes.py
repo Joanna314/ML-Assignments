@@ -80,7 +80,7 @@ def projPCA(Xtest, mu, U):
 
 def kernelPCA(X, k, kernel_func):
 
-    X = np.array(X)
+    X = np.array(X, dtype=float)
     n, d = X.shape
 
     K = kernel_func(X, X)

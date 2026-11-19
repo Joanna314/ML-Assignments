@@ -117,4 +117,52 @@ def projKernelPCA(Xtest, Xtrain, kernel_func, A):
 
     return Xproj
 
+
+def synClsExperimentsPCA():
+    print("Running synthetic classification experiments with PCA...")
+    n_runs = 100
+    n_train = 128
+    n_test = 1000
+
+    dim_list = [1, 2]
+    gen_model_list = [1, 2]
+
+    train_acc = np.zeros([len(dim_list), len(gen_model_list), n_runs])
+    test_acc = np.zeros([len(dim_list), len(gen_model_list), n_runs])
+
+    np.random.seed(75)
+
+    for r in range(n_runs):
+        for i, k in enumerate(dim_list):
+            for j, gen_model in enumerate(gen_model_list):
+
+                Xtrain, Ytrain = A3helpers.generateData(n=n_train, gen_model=gen_model)
+                Xtest, Ytest = A3helpers.generateData(n=n_test, gen_model=gen_model)
+
+                U, mu = PCA(Xtrain, k)
+                
+                Xtrain_proj = projPCA(Xtrain, mu, U)
+                Xtest_proj = projPCA(Xtest, mu, U)
+
+                Xtrain_proj = A3helpers.augmentX(Xtrain_proj) # add augmentation
+                Xtest_proj = A3helpers.augmentX(Xtest_proj)
+
+                W = minMulDev(Xtrain_proj, Ytrain) # from Q1
+                Yhat = classify(Xtrain_proj, W) # from Q1
+
+                train_acc[i, j, r] = calculateAcc(Yhat, Ytrain) # from Q1
+                Yhat = classify(Xtest_proj, W)
+                test_acc[i, j, r] = calculateAcc(Yhat, Ytest)
+                
+    avg_train_acc = np.mean(train_acc, axis=2)
+    avg_test_acc = np.mean(test_acc, axis=2)
+
+    print("Average Training Accuracy:\n", avg_train_acc)
+    print("Average Testing Accuracy:\n", avg_test_acc)
+
+    return avg_train_acc, avg_test_acc
+
 # Q3: K-means Clustering
+
+if __name__ == "__main__":
+    synClsExperimentsPCA()

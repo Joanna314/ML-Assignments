@@ -2,6 +2,7 @@
 import numpy as np
 from scipy.optimize import minimize
 from scipy.special import expit,logsumexp
+from scipy.spatial.distance import cdist
 from scipy.linalg import eigh
 import A3helpers as A3helpers
 
@@ -30,6 +31,7 @@ def minMulDev(X, Y):
 
 def classify(Xtest, W):
     """
+    Classifies the test data using the learned weights.
     Inputs:
         Xtest: m x d matrix of test data (augmented)
         W: d x k matrix of weights
@@ -44,6 +46,7 @@ def classify(Xtest, W):
 
 def calculateAcc(Yhat, Y):
     """
+    Computes the accuracy of the predictions.
     Inputs:
         Yhat: m x k matrix of one-hot encoded predicted labels
         Y: m x k matrix of one-hot encoded true labels
@@ -118,3 +121,39 @@ def projKernelPCA(Xtest, Xtrain, kernel_func, A):
     return Xproj
 
 # Q3: K-means Clustering
+def kmeans(X, k, max_iter=1000):
+    """
+    Computes the k-means clustering of the data points in X.
+    Inputs:
+        X: n x d matrix of data points
+        k: number of clusters
+        max_iter: maximum number of iterations
+    Outputs:
+        Y: n x k matrix of one-hot encoded cluster assignments
+        U: k x d matrix of cluster centers
+        obj_val: final objective value
+    """
+    n, d = X.shape
+    assert max_iter > 0 and 1 < k < n
+    U = X[np.random.choice(n, k, replace=False)] # Select k random points as initial cluster centers
+    for i in range(max_iter):
+        D = cdist(X, U, metric='sqeuclidean') # Compute pairwise distance between X and U
+        Y = np.eye(k)[np.argmin(D, axis=1)] # Find the new cluster assignments
+        old_U = U
+        U = np.linalg.pinv(Y.T @ Y) @ Y.T @ X # Update cluster centers
+        if np.allclose(old_U, U):
+            break
+    obj_val = (0.5 / n) * np.sum(D.min(axis=1))
+    return Y, U, obj_val
+
+def repeatKmeans(X, k, n_runs=100):
+    """
+    Repeats the k-means clustering n_runs times and returns the best result.
+    """
+    best_obj_val = float('inf')
+    for r in range(n_runs):
+        Y, U, obj_val = kmeans(X, k)
+        if obj_val < best_obj_val:
+            best_Y, best_U, best_obj_val = Y, U, obj_val
+    return best_Y, best_U, best_obj_val
+

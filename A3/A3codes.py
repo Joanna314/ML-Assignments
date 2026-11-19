@@ -2,6 +2,7 @@
 import numpy as np
 from scipy.optimize import minimize
 from scipy.special import expit,logsumexp
+from scipy.linalg import eigh
 import A3helpers as A3helpers
 
 # Q1: Linear Multi-Class Classifier
@@ -54,5 +55,21 @@ def calculateAcc(Yhat, Y):
 
 
 # Q2: Principal Component Analysis
+
+def PCA(X, k):
+
+    X = np.array(X)
+    n, d = X.shape
+
+    mu = np.mean(X, axis=0, keepdims=True).T
+    centered_data = X - mu.T
+
+    covariance_matrix = centered_data.T @ centered_data
+
+    eigenvalues, eigenvectors = eigh(covariance_matrix, subset_by_index=[d - k, d - 1])
+
+    U = eigenvectors[:, ::-1].T
+
+    return U, mu
 
 # Q3: K-means Clustering

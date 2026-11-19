@@ -222,7 +222,7 @@ def kernelKmeans(X, kernel_func, k, init_Y, max_iter=1000):
         Y: n x k matrix of one-hot encoded cluster assignments
         obj_val: final objective value
     """
-    
+
     n, d = X.shape
     assert max_iter > 0 and 1 < k < n
     K = kernel_func(X, X)

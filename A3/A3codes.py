@@ -157,12 +157,6 @@ def synClsExperimentsPCA():
     avg_train_acc = np.mean(train_acc, axis=2)
     avg_test_acc = np.mean(test_acc, axis=2)
 
-    print("Average Training Accuracy:\n", avg_train_acc)
-    print("Average Testing Accuracy:\n", avg_test_acc)
-
     return avg_train_acc, avg_test_acc
 
 # Q3: K-means Clustering
-
-if __name__ == "__main__":
-    synClsExperimentsPCA()

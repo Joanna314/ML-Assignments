@@ -72,4 +72,11 @@ def PCA(X, k):
 
     return U, mu
 
+def projPCA(Xtest, mu, U):
+
+    Xproj = (Xtest - mu.T) @ U.T
+
+    return Xproj
+
+
 # Q3: K-means Clustering

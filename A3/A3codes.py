@@ -96,5 +96,25 @@ def kernelPCA(X, k, kernel_func):
 
     return A 
 
+def projKernelPCA(Xtest, Xtrain, kernel_func, A):
+
+    Xtest = np.array(Xtest, dtype=float)
+    Xtrain = np.array(Xtrain, dtype=float)
+    A = np.array(A, dtype=float)
+
+    m, dtest = Xtest.shape
+    n, dtrain = Xtrain.shape
+
+    K_te_tr = kernel_func(Xtest, Xtrain)
+    K_tr_tr = kernel_func(Xtrain, Xtrain)
+
+    ones_vector_dim_mn = np.ones((m, n))/n
+    ones_vector_dim_nn = np.ones((n, n))/n
+
+    K_tilde = K_te_tr - ones_vector_dim_mn @ K_tr_tr - K_te_tr @ ones_vector_dim_nn + ones_vector_dim_mn @ K_tr_tr @ ones_vector_dim_nn
+
+    Xproj = K_tilde @ A.T
+
+    return Xproj
 
 # Q3: K-means Clustering

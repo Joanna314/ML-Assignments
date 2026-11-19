@@ -199,4 +199,30 @@ def repeatKmeans(X, k, n_runs=100):
             best_Y, best_U, best_obj_val = Y, U, obj_val
     return best_Y, best_U, best_obj_val
 
-
+def kernelKmeans(X, kernel_func, k, init_Y, max_iter=1000):
+    """
+    Computes the kernel k-means clustering of the data points in X.
+    Inputs:
+        X: n x d matrix of data points
+        kernel_func: function to compute the kernel matrix
+        k: number of clusters
+        init_Y: n x k matrix of initial one-hot encoded cluster assignments
+        max_iter: maximum number of iterations
+    Outputs:
+        Y: n x k matrix of one-hot encoded cluster assignments
+        obj_val: final objective value
+    """
+    
+    n, d = X.shape
+    assert max_iter > 0 and 1 < k < n
+    K = kernel_func(X, X)
+    Y = init_Y
+    for i in range(max_iter):
+        Y_plus = np.linalg.pinv(Y)
+        D = np.diag(K)[:, None] @ np.ones((1, k)) + np.ones((n, 1)) @ np.diag(Y_plus @ K @ Y_plus.T)[None, :] - 2 * (K @ Y_plus.T) 
+        old_Y = Y
+        Y = np.eye(k)[np.argmin(D, axis=1)]
+        if np.allclose(old_Y, Y):
+            break
+    obj_val = (0.5 / n) * np.sum(D.min(axis=1))
+    return Y, obj_val

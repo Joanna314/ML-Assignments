@@ -78,5 +78,23 @@ def projPCA(Xtest, mu, U):
 
     return Xproj
 
+def kernelPCA(X, k, kernel_func):
+
+    X = np.array(X)
+    n, d = X.shape
+
+    K = kernel_func(X, X)
+
+    ones_vector = np.ones((n, n))/n
+    K_tilde = K - ones_vector @ K - K @ ones_vector + ones_vector @ K @ ones_vector
+
+    eigenvalues, eigenvectors = eigh(K_tilde, subset_by_index=[n - k, n - 1])
+    eigenvalues = eigenvalues[::-1]
+    alphas = eigenvectors[:, ::-1]
+
+    A = alphas / np.sqrt(eigenvalues)
+
+    return A 
+
 
 # Q3: K-means Clustering

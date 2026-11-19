@@ -199,6 +199,16 @@ def repeatKmeans(X, k, n_runs=100):
             best_Y, best_U, best_obj_val = Y, U, obj_val
     return best_Y, best_U, best_obj_val
 
+def chooseK(X, k_candidates=[2,3,4,5,6,7,8,9]):
+    """
+    Returns the list of objective values for each candidate k.
+    """
+    obj_val_list = []
+    for k in k_candidates:
+        _, _, obj_val = repeatKmeans(X, k)
+        obj_val_list.append(obj_val)
+    return obj_val_list
+
 def kernelKmeans(X, kernel_func, k, init_Y, max_iter=1000):
     """
     Computes the kernel k-means clustering of the data points in X.
